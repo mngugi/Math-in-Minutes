@@ -1,0 +1,416 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: transparent; }
+
+#stage {
+  width: 100%;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans, sans-serif);
+  position: relative;
+  overflow: hidden;
+  padding: 2rem;
+}
+
+.slide { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; animation: fadeIn 0.6s ease; }
+.slide.active { display: flex; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+.label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  margin-bottom: 1.2rem;
+}
+
+.big-title {
+  font-size: 32px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+
+.sub {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  margin-top: 0.5rem;
+  max-width: 440px;
+  line-height: 1.7;
+}
+
+.sequence {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.num {
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  min-width: 44px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.35s ease, color 0.3s ease;
+}
+.num.show { opacity: 1; }
+.num.highlight { color: #1D9E75; }
+.num.question { color: #8B8B88; font-style: italic; }
+
+.sep {
+  font-size: 20px;
+  color: var(--color-text-tertiary);
+  margin-top: 4px;
+}
+
+.formula {
+  font-family: var(--font-mono, monospace);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-md);
+  padding: 10px 20px;
+  margin-top: 1.2rem;
+  letter-spacing: 0.03em;
+}
+
+.reveal-btn {
+  margin-top: 1.4rem;
+  background: transparent;
+  border: 0.5px solid var(--color-border-secondary);
+  color: var(--color-text-primary);
+  font-size: 13px;
+  padding: 8px 20px;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: var(--font-sans, sans-serif);
+}
+.reveal-btn:hover { background: var(--color-background-secondary); }
+
+.progress-bar {
+  position: absolute;
+  bottom: 0; left: 0;
+  height: 2px;
+  background: #1D9E75;
+  transition: width 0.4s ease;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 2rem;
+}
+
+.ctrl-btn {
+  background: transparent;
+  border: 0.5px solid var(--color-border-secondary);
+  color: var(--color-text-primary);
+  font-size: 13px;
+  padding: 8px 18px;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  font-family: var(--font-sans, sans-serif);
+  transition: background 0.15s, opacity 0.2s;
+}
+.ctrl-btn:hover { background: var(--color-background-secondary); }
+.ctrl-btn:disabled { opacity: 0.3; cursor: default; }
+.ctrl-btn:disabled:hover { background: transparent; }
+
+.slide-counter {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  min-width: 48px;
+  text-align: center;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  max-width: 460px;
+  margin-top: 1.2rem;
+}
+
+.mini-card {
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: var(--border-radius-md);
+  padding: 12px 14px;
+  text-align: left;
+}
+.mini-card .mc-title { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.mini-card .mc-val { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+
+.visual-row {
+  display: flex; gap: 8px; align-items: flex-end; margin: 1.2rem 0;
+}
+.vis-block {
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  width: 28px;
+  border-radius: 3px;
+  transition: all 0.4s ease;
+}
+
+.dot-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin: 1rem 0; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: #1D9E75; opacity: 0; transition: opacity 0.2s ease; }
+.dot.show { opacity: 1; }
+.dot.dim { opacity: 0.2; }
+</style>
+
+<div id="stage">
+  <div class="progress-bar" id="prog"></div>
+
+  <!-- Slide 0: Title -->
+  <div class="slide active" id="s0">
+    <div class="label">Number patterns</div>
+    <div class="big-title">The hidden order<br>in numbers</div>
+    <div class="sub">Six patterns that mathematicians have marveled at for centuries.</div>
+  </div>
+
+  <!-- Slide 1: Fibonacci -->
+  <div class="slide" id="s1">
+    <div class="label">Pattern 1 — Fibonacci sequence</div>
+    <div class="sequence" id="fib-seq"></div>
+    <div class="sub">Each term is the sum of the two before it. Found in sunflowers, shells, and galaxy spirals.</div>
+    <div class="formula" id="fib-f" style="display:none">F(n) = F(n-1) + F(n-2)</div>
+  </div>
+
+  <!-- Slide 2: Triangular numbers -->
+  <div class="slide" id="s2">
+    <div class="label">Pattern 2 — Triangular numbers</div>
+    <div class="sequence" id="tri-seq"></div>
+    <div class="dot-row" id="tri-dots"></div>
+    <div class="sub">Count the dots: 1, 3, 6, 10 — each adds the next row.</div>
+    <div class="formula" id="tri-f" style="display:none">T(n) = n(n+1) / 2</div>
+  </div>
+
+  <!-- Slide 3: Powers of 2 -->
+  <div class="slide" id="s3">
+    <div class="label">Pattern 3 — Powers of 2</div>
+    <div class="sequence" id="pow-seq"></div>
+    <div class="visual-row" id="pow-bars"></div>
+    <div class="sub">Double each time. The foundation of binary, computing, and exponential growth.</div>
+    <div class="formula" id="pow-f" style="display:none">a(n) = 2ⁿ</div>
+  </div>
+
+  <!-- Slide 4: Perfect squares -->
+  <div class="slide" id="s4">
+    <div class="label">Pattern 4 — Perfect squares</div>
+    <div class="sequence" id="sq-seq"></div>
+    <div class="sub">The difference between consecutive squares is always an odd number: 3, 5, 7, 9…</div>
+    <div class="formula" id="sq-f" style="display:none">a(n) = n²  →  differences: 2n − 1</div>
+  </div>
+
+  <!-- Slide 5: Prime gaps -->
+  <div class="slide" id="s5">
+    <div class="label">Pattern 5 — Prime numbers</div>
+    <div class="sequence" id="pr-seq"></div>
+    <div class="sub">No formula predicts the next prime — yet they never truly run out. Their density thins, but primes go on forever.</div>
+    <div class="formula" id="pr-f" style="display:none">There are ∞ primes (Euclid, ~300 BC)</div>
+  </div>
+
+  <!-- Slide 6: Collatz -->
+  <div class="slide" id="s6">
+    <div class="label">Pattern 6 — Collatz conjecture</div>
+    <div class="sequence" id="col-seq" style="max-width:480px; gap:4px;"></div>
+    <div class="sub">Start at 27: if even ÷2, if odd ×3+1. Every number ever tested reaches 1. Nobody has proven this is always true.</div>
+    <div class="formula" id="col-f" style="display:none">if n even: n/2 · if n odd: 3n+1</div>
+  </div>
+
+  <!-- Slide 7: Outro -->
+  <div class="slide" id="s7">
+    <div class="label">Numbers</div>
+    <div class="big-title">Patterns everywhere.</div>
+    <div class="grid2">
+      <div class="mini-card"><div class="mc-title">Fibonacci</div><div class="mc-val">1, 1, 2, 3, 5…</div></div>
+      <div class="mini-card"><div class="mc-title">Triangular</div><div class="mc-val">1, 3, 6, 10…</div></div>
+      <div class="mini-card"><div class="mc-title">Powers of 2</div><div class="mc-val">1, 2, 4, 8…</div></div>
+      <div class="mini-card"><div class="mc-title">Perfect squares</div><div class="mc-val">1, 4, 9, 16…</div></div>
+      <div class="mini-card"><div class="mc-title">Primes</div><div class="mc-val">2, 3, 5, 7…</div></div>
+      <div class="mini-card"><div class="mc-title">Collatz</div><div class="mc-val">Still unsolved</div></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="ctrl-btn" id="prevBtn" disabled onclick="navigate(-1)">← prev</button>
+    <span class="slide-counter" id="counter">1 / 8</span>
+    <button class="ctrl-btn" id="nextBtn" onclick="navigate(1)">next →</button>
+  </div>
+</div>
+
+<script>
+const total = 8;
+let current = 0;
+let timers = [];
+let revealed = {};
+
+function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+
+function navigate(dir) {
+  clearTimers();
+  const prev = current;
+  current = Math.max(0, Math.min(total - 1, current + dir));
+  if (current === prev) return;
+  const el = document.getElementById('s' + prev);
+  el.classList.remove('active');
+  const nel = document.getElementById('s' + current);
+  nel.classList.add('active');
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === total - 1;
+  document.getElementById('counter').textContent = (current + 1) + ' / ' + total;
+  document.getElementById('prog').style.width = ((current / (total - 1)) * 100) + '%';
+  setupSlide(current);
+}
+
+function delay(fn, ms) { const t = setTimeout(fn, ms); timers.push(t); return t; }
+
+function revealNums(containerId, nums, highlights, questionIdx) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  nums.forEach((n, i) => {
+    const sp = document.createElement('span');
+    sp.className = 'num' + (i === questionIdx ? ' question' : '');
+    sp.textContent = n;
+    c.appendChild(sp);
+    if (i < nums.length - 1) {
+      const sep = document.createElement('span');
+      sep.className = 'sep';
+      sep.textContent = ',';
+      c.appendChild(sep);
+    }
+    delay(() => {
+      sp.classList.add('show');
+      if (highlights && highlights.includes(i)) sp.classList.add('highlight');
+    }, 120 * i + 300);
+  });
+}
+
+function setupSlide(idx) {
+  if (idx === 1 && !revealed[1]) setupFib();
+  if (idx === 2 && !revealed[2]) setupTri();
+  if (idx === 3 && !revealed[3]) setupPow();
+  if (idx === 4 && !revealed[4]) setupSq();
+  if (idx === 5 && !revealed[5]) setupPr();
+  if (idx === 6 && !revealed[6]) setupCol();
+  revealed[idx] = true;
+}
+
+function showFormula(id, slideIdx) {
+  const el = document.getElementById(id);
+  el.style.display = 'none';
+  delay(() => { el.style.display = 'block'; }, 1200 + 120 * 10);
+}
+
+function setupFib() {
+  const nums = [1, 1, 2, 3, 5, 8, 13, 21, '?'];
+  revealNums('fib-seq', nums, [7], 8);
+  showFormula('fib-f', 1);
+  delay(() => {
+    const spans = document.querySelectorAll('#fib-seq .num');
+    if (spans[8]) { spans[8].textContent = '34'; spans[8].classList.remove('question'); spans[8].classList.add('highlight'); }
+  }, 3800);
+}
+
+function setupTri() {
+  const nums = [1, 3, 6, 10, 15, 21, '?'];
+  revealNums('tri-seq', nums, [5], 6);
+  const dotsEl = document.getElementById('tri-dots');
+  dotsEl.innerHTML = '';
+  for (let i = 0; i < 21; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    dotsEl.appendChild(d);
+    delay(() => d.classList.add('show'), 200 + i * 60);
+  }
+  showFormula('tri-f', 2);
+  delay(() => {
+    const spans = document.querySelectorAll('#tri-seq .num');
+    if (spans[6]) { spans[6].textContent = '28'; spans[6].classList.remove('question'); spans[6].classList.add('highlight'); }
+  }, 3600);
+}
+
+function setupPow() {
+  const nums = [1, 2, 4, 8, 16, 32, 64, 128];
+  revealNums('pow-seq', nums, [7]);
+  const bar = document.getElementById('pow-bars');
+  bar.innerHTML = '';
+  [4, 8, 16, 28, 44, 60, 80, 100].forEach((h, i) => {
+    const b = document.createElement('div');
+    b.className = 'vis-block';
+    b.style.height = '4px';
+    bar.appendChild(b);
+    delay(() => { b.style.height = h + 'px'; }, 300 + i * 120);
+  });
+  showFormula('pow-f', 3);
+}
+
+function setupSq() {
+  const nums = [1, 4, 9, 16, 25, 36, 49, '?'];
+  revealNums('sq-seq', nums, [6], 7);
+  showFormula('sq-f', 4);
+  delay(() => {
+    const spans = document.querySelectorAll('#sq-seq .num');
+    if (spans[7]) { spans[7].textContent = '64'; spans[7].classList.remove('question'); spans[7].classList.add('highlight'); }
+  }, 3500);
+}
+
+function setupPr() {
+  const nums = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, '…'];
+  const c = document.getElementById('pr-seq');
+  c.innerHTML = '';
+  nums.forEach((n, i) => {
+    const sp = document.createElement('span');
+    sp.className = 'num';
+    sp.textContent = n;
+    c.appendChild(sp);
+    if (i < nums.length - 1) {
+      const sep = document.createElement('span');
+      sep.className = 'sep';
+      sep.textContent = ',';
+      c.appendChild(sep);
+    }
+    delay(() => sp.classList.add('show'), 100 * i + 300);
+  });
+  showFormula('pr-f', 5);
+}
+
+function setupCol() {
+  const seq = [27,82,41,124,62,31,94,47,142,71,214,107,322,161,484,242,121,364,182,91,274,137,412,206,103,310,155,466,233,700,'…1'];
+  const c = document.getElementById('col-seq');
+  c.innerHTML = '';
+  seq.forEach((n, i) => {
+    const sp = document.createElement('span');
+    sp.className = 'num';
+    sp.style.fontSize = '14px';
+    sp.style.minWidth = '36px';
+    sp.textContent = n;
+    if (n === 1 || n === '…1') sp.classList.add('highlight');
+    c.appendChild(sp);
+    if (i < seq.length - 1) {
+      const sep = document.createElement('span');
+      sep.className = 'sep';
+      sep.style.fontSize = '12px';
+      sep.textContent = '→';
+      c.appendChild(sep);
+    }
+    delay(() => sp.classList.add('show'), 80 * Math.min(i, 20) + 300);
+  });
+  showFormula('col-f', 6);
+}
+
+document.getElementById('prog').style.width = '0%';
+</script>
