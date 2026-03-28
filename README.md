@@ -15,12 +15,19 @@ Ever stared at numbers and wondered…
 ## The Video:
 
 0:00 – Intro to Number Patterns
+
 0:20 – Fibonacci Sequence
+
 0:55 – Triangular Numbers
+
 1:25 – Powers of 2
+
 1:50 – Perfect Squares
+
 2:20 – Prime Numbers
+
 2:55 – Collatz Conjecture
+
 3:40 – All Patterns Summary  Drop a  if any of these blew your mind!
 
 Which pattern surprised you the most? Comment below. 
