@@ -12,7 +12,7 @@ Ever stared at numbers and wondered…
 - Collatz Conjecture (starting at 27… it takes 111 wild steps!)
 - Perfect for students, math lovers, teachers, or anyone who wants to see why numbers are actually cool.
 
-## The Video:
+## The Video: Number Patterns
 
 0:00 – Intro to Number Patterns
 
